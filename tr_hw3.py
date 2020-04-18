@@ -1,12 +1,6 @@
 import pandas as pd
 import math
 import csv
-import numpy as np
-import nltk
-#nltk.download('punkt')
-from nltk.corpus import stopwords
-#nltk.download('stopwords')
-
 
 # for each term, the num docs for each class []
 term_class_totals = {}
@@ -58,8 +52,8 @@ def parse_doc(doc):
     doc = doc.split()
     tokens = []
     for i in range(len(doc)):
-        doc[i] = doc[i].strip().lower()
-        doc[i] = doc[i].strip('.!?\",/\\*()-_&;\'~:[]{}')
+        doc[i] = doc[i].strip().strip('\u201C').strip('\u201D').lower()
+        doc[i] = doc[i].strip('.!?,/\\*()-_&;~:[]{}')
         if doc[i].count('/') > 0 and doc[i].count('.com') == 0:
             words = doc[i].split('/')
             for j in range(len(words)):
@@ -70,7 +64,6 @@ def parse_doc(doc):
 
 
 def process_data():
-#    punct = ['.', '?', '"', ',', "'", '+', '%', '!', "''"]
     for d in range(359):
         # update the total num docs for each class
         c1 = sheet1[d][1]
