@@ -3,7 +3,9 @@ import math
 import csv
 import numpy as np
 import nltk
-#nltk.download()
+#nltk.download('punkt')
+from nltk.corpus import stopwords
+#nltk.download('stopwords')
 
 
 # for each term, the num docs for each class []
@@ -18,15 +20,15 @@ class_totals = {
     'D': 0,
     'O': 0
 }
-class_docs = {
-    'H': [],
-    'N': [],
-    'R': [],
-    'E': [],
-    'I': [],
-    'D': [],
-    'O': []
-}
+#class_docs = {
+#    'H': [],
+#    'N': [],
+#    'R': [],
+#    'E': [],
+#    'I': [],
+#    'D': [],
+#    'O': []
+#}
 class_top300 = {
     'H': [],
     'N': [],
@@ -45,115 +47,135 @@ class_map = {
     'D': 5,
     'O': 6
 }
+docs = {}
+doc_labels = {}
+
+sheet1 = pd.ExcelFile('Annotated_for_health.xlsx').parse(0).values
+sheet2 = pd.ExcelFile('Annotated_for_topic.xlsx').parse(0).values
+
+
+def parse_doc(doc):
+    doc = doc.split()
+    tokens = []
+    for i in range(len(doc)):
+        doc[i] = doc[i].strip().lower()
+        doc[i] = doc[i].strip('.!?\",/\\*()-_&;\'~:[]{}')
+        if doc[i].count('/') > 0 and doc[i].count('.com') == 0:
+            words = doc[i].split('/')
+            for j in range(len(words)):
+                tokens.append(words[j])
+        else:
+            tokens.append(doc[i])
+    return tokens
 
 
 def process_data():
-    sheet1 = pd.ExcelFile('Annotated_for_health.xlsx').parse(0).values
-    sheet2 = pd.ExcelFile('Annotated_for_topic.xlsx').parse(0).values
-    punct = ['.', '?', '"', ',', "'"]
+#    punct = ['.', '?', '"', ',', "'", '+', '%', '!', "''"]
     for d in range(359):
-        # update the total doc num for the class
-        c = sheet1[d][1]
-        n = class_totals[c]
-        class_totals[c] = n+1
-        l = nltk.word_tokenize(sheet1[d][0])
-        l = list(filter(lambda i: i not in punct, l))
+        # update the total num docs for each class
+        c1 = sheet1[d][1]
+        n = class_totals[c1]
+        class_totals[c1] = n+1
+        c2 = sheet2[d][1]
+        n = class_totals[c2]
+        class_totals[c2] = n + 1
 
+        # parse the document and get a list without duplicates: we only care about if the term exists, not how many times
+        tokens = parse_doc(sheet1[d][0])
+        no_dup = list(dict.fromkeys(tokens))
+
+        # update the number of documents that the term belongs in for each class
+        for term in no_dup:
+            if term in term_class_totals:
+                totals = term_class_totals[term]
+                totals[class_map[c1]] += 1
+                totals[class_map[c2]] += 1
+                term_class_totals[term] = totals
+            else:
+                totals = [0 for i in range(7)]
+                totals[class_map[c1]] = 1
+                totals[class_map[c2]] = 1
+                term_class_totals[term] = totals
+
+        # store the full tokens in a dict with its doc id
+        docs[d] = tokens
+
+        # store labels for each doc
+        doc_labels[d] = (c1, c2)
+
+
+'''
+        # tokenize doc, get rid of duplicate terms
+        l = nltk.word_tokenize(sheet1[d][0].lower())
+        l = list(filter(lambda i: i not in punct, l))
+        # keep nots, strip punctuation, break up slashes
         for i in range(len(l)):
             if l[i] == "n't":
                 l[i] = 'not'
-            l[i] = l[i].strip('.!?",/\\*()-_&;~:[]{}').lower()
+            l[i] = l[i].strip('.!?",/\\*()-_&;~:[]{}')
             if l[i].count('/') > 0 and l[i].count('.com') == 0:
                 words = l[i].split('/')
                 l[i] = words[0]
                 for j in range(1, len(words)):
                     l.append(words[j])
-
-        class_docs[c].append(l)
-        l = list(dict.fromkeys(l))
-        if '' in l:
-            l.remove('')
-
-        # update the num docs for the class for each term
-        for t in l:
-            if t in term_class_totals:
-                li = term_class_totals[t]
-                li[class_map[c]] += 1
-                term_class_totals[t] = li
-            else:
-                li = [0 for n in range(7)]
-                li[class_map[c]] = 1
-                term_class_totals[t] = li
-
-        # update the total doc num for the class
-        c = sheet2[d][1]
-        n = class_totals[c]
-        class_totals[c] = n + 1
-        l = nltk.word_tokenize(sheet2[d][0])
-        l = list(filter(lambda i: i not in punct, l))
-
-        for i in range(len(l)):
-            if l[i] == "n't":
-                l[i] = 'not'
-            l[i] = l[i].strip('.!?",/\\*()-_&;~:[]{}').lower()
-            if l[i].count('/') > 0 and l[i].count('.com') == 0:
-                words = l[i].split('/')
-                l[i] = words[0]
-                for j in range(1, len(words)):
-                   l.append(words[j])
-
-        class_docs[c].append(l)
-        l = list(dict.fromkeys(l))
-        if '' in l:
-            l.remove('')
-
-        # update the num docs for the class for each term
-        for t in l:
-            if t in term_class_totals:
-                li = term_class_totals[t]
-                li[class_map[c]] += 1
-                term_class_totals[t] = li
-            else:
-                li = [0 for n in range(7)]
-                li[class_map[c]] = 1
-                term_class_totals[t] = li
+'''
 
 
 def mi_features(c):
     mi_scores = []
 
+    # for each term, calc mi score
     for i in term_class_totals:
-        print(i)
-        print(term_class_totals[i])
         mi_scores.append([i, calc_mi(c, term_class_totals[i])])
 
+    # sort the scores in descending order
     mi_scores.sort(reverse=True, key=lambda e: e[1])
 
+    # save the top 300 terms for the class
     for i in range(300):
         class_top300[c].append(mi_scores[i][0])
 
+    # create a doc with each term and its mi score
     filename = c + '.scores'
     with open(filename, 'w') as f:
         for i in range(len(mi_scores)):
-            s = mi_scores[i][0] + "  " + "{:.5f}".format(mi_scores[i][1]) + '\n'
+            s = str(mi_scores[i][0]) + "  " + "{:.5f}".format(mi_scores[i][1]) + '\n'
             f.write(s)
 
 
 def calc_mi(c, totals):
     print(totals)
+    # n11: number of docs with the term in the class
     n11 = totals[class_map[c]]
-    n10 = 0
-    for i in range(len(totals)):
-        if i != class_map[c]:
-            n10 += totals[i]
+
+    # n10: number of docs with the term not in the class: sum of count for other classes
+    if c == 'H':
+        n10 = totals[1]
+    elif c == 'N':
+        n10 = totals[0]
+    else:
+        n10 = 0
+        for i in range(2, len(totals)):
+            if i != class_map[c]:
+                n10 += totals[i]
+
+    # n01: number of docs without the term in the class: total docs for class - n11
     n01 = class_totals[c] - n11
-    n00 = 0
-    for x, y in class_totals.items():
-        if x != c:
-            n00 += y
+
+    # n00: number of docs without the term not in the class: total docs for other classes - n10
+    if c == 'H':
+        n00 = class_totals['N']
+    elif c == 'N':
+        n00 = class_totals['H']
+    else:
+        n00 = 0
+        for x, y in class_totals.items():
+            if x != c and x != 'H' and x != 'N':
+                n00 += y
     n00 -= n10
+
     n = n11 + n10 + n01 + n00
-    print(n, n11, n10, n01, n00)
+#    print(n, n11, n10, n01, n00)
 
     result = 0
     if n11 != 0:
@@ -172,35 +194,40 @@ def build_binary_datasets(c):
     file2 = c + '300.data'
     words1 = class_top300[c][:50]
     words2 = class_top300[c]
+
     with open(file1, 'w') as csvf:
         writer = csv.writer(csvf)
-        for doc in class_docs[c]:
-            s = ''
-            for t in doc:
-                if t in words1:
-                    s += t + ' '
-            s = s[:len(s)-1]
-            if len(s) == 0:
-                continue
-            writer.writerow([s] + [c])
-    with open(file2, 'w') as csvf:
-        writer = csv.writer(csvf)
-        for doc in class_docs[c]:
-            s = ''
-            for t in doc:
-                if t in words2:
-                    s += t + ' '
-            s = s[:len(s)-1]
-            if len(s) == 0:
-                continue
-            writer.writerow([s] + [c])
+        with open(file2, 'w') as csvf2:
+            writer2 = csv.writer(csvf2)
+            for i in range(len(docs)):
+                classes = doc_labels[i]
+                tokens = docs[i]
+                s = ''
+                s2 = ''
+                if c == 'H' or c == 'N':
+                    label = classes[0]
+                else:
+                    label = classes[1]
+                for t in tokens:
+                    if t in words1:
+                        s += t + ' '
+                    if t in words2:
+                        s2 += t + ' '
+                s = s[:len(s)-1]
+                s2 = s2[:len(s2)-1]
+                if label == c:
+                    label = 1
+                else:
+                    label = 0
+                writer.writerow([s] + [label])
+                writer2.writerow([s2] + [label])
 
 
-def create_ARFF_dataA():
+def create_arff_data_a(c):
     pass
 
 
-def create_ARFF_dataB():
+def create_arff_data_b(c):
     pass
 
 print(term_class_totals)
@@ -209,6 +236,5 @@ print(term_class_totals)
 print(class_totals)
 mi_features('H')
 print(term_class_totals)
-print(class_docs['H'])
 build_binary_datasets('H')
 print(type('strength'))
