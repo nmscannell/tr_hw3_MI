@@ -104,23 +104,6 @@ def process_data():
         doc_labels[d] = (c1, c2)
 
 
-'''
-        # tokenize doc, get rid of duplicate terms
-        l = nltk.word_tokenize(sheet1[d][0].lower())
-        l = list(filter(lambda i: i not in punct, l))
-        # keep nots, strip punctuation, break up slashes
-        for i in range(len(l)):
-            if l[i] == "n't":
-                l[i] = 'not'
-            l[i] = l[i].strip('.!?",/\\*()-_&;~:[]{}')
-            if l[i].count('/') > 0 and l[i].count('.com') == 0:
-                words = l[i].split('/')
-                l[i] = words[0]
-                for j in range(1, len(words)):
-                    l.append(words[j])
-'''
-
-
 def mi_features(c):
     mi_scores = []
 
@@ -235,6 +218,18 @@ process_data()
 print(term_class_totals)
 print(class_totals)
 mi_features('H')
-print(term_class_totals)
+mi_features('N')
+mi_features('D')
+mi_features('I')
+mi_features('R')
+mi_features('E')
+mi_features('O')
+#print(term_class_totals)
 build_binary_datasets('H')
-print(type('strength'))
+#print(type('strength'))
+build_binary_datasets('N')
+build_binary_datasets('D')
+build_binary_datasets('I')
+build_binary_datasets('R')
+build_binary_datasets('E')
+build_binary_datasets('O')
