@@ -35,8 +35,8 @@ class_map = {
 docs = {}
 doc_labels = {}
 
-sheet1 = pd.ExcelFile('Annotated_for_health.xlsx').parse(0).values
-sheet2 = pd.ExcelFile('Annotated_for_topic.xlsx').parse(0).values
+sheet1 = pd.ExcelFile('data/Annotated_for_health.xlsx').parse(0).values
+sheet2 = pd.ExcelFile('data/Annotated_for_topic.xlsx').parse(0).values
 
 
 def parse_doc(doc):
@@ -44,11 +44,11 @@ def parse_doc(doc):
     tokens = []
     for i in range(len(doc)):
         doc[i] = doc[i].strip().strip('\u201C').strip('\u201D').lower()
-        doc[i] = doc[i].strip('.\"\'!?,/\\*()-_&;~:[]{}')
+        doc[i] = doc[i].strip('.\"\'!?,/\\*()-_&;~:[]{}').replace('"',"'")
         if doc[i].count('/') > 0 and doc[i].count('.com') == 0:
             words = doc[i].split('/')
             for j in range(len(words)):
-                tokens.append(words[j])
+                tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}').replace('"',"'"))
         else:
             tokens.append(doc[i])
     return tokens
@@ -103,7 +103,7 @@ def mi_features(c):
         class_top300[c].append(mi_scores[i][0])
 
     # create a doc with each term and its mi score
-    filename = c + '.scores'
+    filename = 'scores/' + c + '.scores'
     with open(filename, 'w') as f:
         for i in range(len(mi_scores)):
             s = str(mi_scores[i][0]) + "  " + "{:.5f}".format(mi_scores[i][1]) + '\n'
@@ -111,7 +111,6 @@ def mi_features(c):
 
 
 def calc_mi(c, totals):
-    print(totals)
     # n11: number of docs with the term in the class
     n11 = totals[class_map[c]]
 
@@ -157,8 +156,8 @@ def calc_mi(c, totals):
 
 
 def build_binary_datasets(c):
-    file1 = c + '50.data'
-    file2 = c + '300.data'
+    file1 = 'data/' + c + '50.data'
+    file2 = 'data/' + c + '300.data'
     words1 = class_top300[c][:50]
     words2 = class_top300[c]
 
@@ -191,13 +190,13 @@ def build_binary_datasets(c):
 
 
 def create_arff_data_a(c):
-    file_name = 'multi_' + c + '.arff'
+    file_name = 'arff/multi_' + c + '.arff'
     with open(file_name, 'w') as f:
         f.write('@relation multiclass\n\n')
         keys = list(term_class_totals.keys())
         keys.sort()
         for term in keys:
-            f.write('@attribute ' + term + ' numeric\n')
+            f.write('@attribute "' + term + '" numeric\n')
         if c == 'H' or c == 'N':
             f.write('@attribute CLASS {H,N}\n')
         else:
@@ -219,16 +218,16 @@ def create_arff_data_a(c):
 
 
 def create_arff_data_b(c):
-    file_name = 'binary_50' + c + '.arff'
+    file_name = 'arff/binary_' + c + '50.arff'
     with open(file_name, 'w') as f:
         f.write('@relation binary\n\n')
         terms = class_top300[c][:50]
         for term in terms:
-            f.write('@attribute ' + term + ' numeric\n')
+            f.write('@attribute "' + term + '" numeric\n')
         f.write('@attribute CLASS {1,0}\n')
         f.write('\n@data')
 
-        with open(c + '50.data') as csvf:
+        with open('data/' + c + '50.data') as csvf:
             read = csv.reader(csvf)
             for row in read:
                 f.write('\n')
@@ -242,16 +241,16 @@ def create_arff_data_b(c):
                 s += row[1]
                 f.write(s)
 
-    file_name = 'binary_300' + c + '.arff'
+    file_name = 'arff/binary_' + c + '300.arff'
     with open(file_name, 'w') as f:
         f.write('@relation binary\n\n')
         terms = class_top300[c]
         for term in terms:
-            f.write('@attribute ' + term + ' numeric\n')
+            f.write('@attribute "' + term + '" numeric\n')
         f.write('@attribute CLASS {1,0}\n')
         f.write('\n@data')
 
-        with open(c + '300.data') as csvf:
+        with open('data/' + c + '300.data') as csvf:
             read = csv.reader(csvf)
             for row in read:
                 f.write('\n')
@@ -266,10 +265,8 @@ def create_arff_data_b(c):
                 f.write(s)
 
 
-print(term_class_totals)
 process_data()
-print(term_class_totals)
-print(class_totals)
+
 mi_features('H')
 mi_features('N')
 mi_features('D')
@@ -277,15 +274,15 @@ mi_features('I')
 mi_features('R')
 mi_features('E')
 mi_features('O')
-#print(term_class_totals)
+
 build_binary_datasets('H')
-#print(type('strength'))
 build_binary_datasets('N')
 build_binary_datasets('D')
 build_binary_datasets('I')
 build_binary_datasets('R')
 build_binary_datasets('E')
 build_binary_datasets('O')
+
 create_arff_data_a('H')
 create_arff_data_a('N')
 create_arff_data_a('D')
@@ -293,6 +290,7 @@ create_arff_data_a('I')
 create_arff_data_a('E')
 create_arff_data_a('R')
 create_arff_data_a('O')
+
 create_arff_data_b('H')
 create_arff_data_b('N')
 create_arff_data_b('D')
