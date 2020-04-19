@@ -202,8 +202,9 @@ def create_arff_data_a(c):
             f.write('@attribute CLASS {H,N}\n')
         else:
             f.write('@attribute CLASS {D,E,I,O,R}\n')
-        f.write('\n@data\n')
+        f.write('\n@data')
         for doc, tokens in docs.items():
+            f.write('\n')
             s = ''
             for term in keys:
                 if term in tokens:
@@ -214,36 +215,56 @@ def create_arff_data_a(c):
                 s += doc_labels[doc][0]
             else:
                 s += doc_labels[doc][1]
-            f.write(s + '\n')
+            f.write(s)
 
 
 def create_arff_data_b(c):
-    file_name = 'binary_' + c + '.arff'
+    file_name = 'binary_50' + c + '.arff'
     with open(file_name, 'w') as f:
         f.write('@relation binary\n\n')
-        print(term_class_totals.keys())
-        print(list(term_class_totals.keys()))
-        keys = list(term_class_totals.keys()).sort()
-        print(keys)
-        for term in keys:
-            f.write('@attribute ' + term + ' numberic\n')
-        if c == 'H' or c == 'N':
-            f.write('@attribute CLASS {H,N}\n')
-        else:
-            f.write('@attribute CLASS {D,E,I,O,R}\n')
-        f.write('\n@data\n')
-        for doc, tokens in docs:
-            s = ''
-            for term in keys:
-                if term in tokens:
-                    s += '1,'
-                else:
-                    s += '0,'
-            if c == 'H' or c == 'N':
-                s += doc_labels[doc][0]
-            else:
-                s += doc_labels[doc][1]
-        pass
+        terms = class_top300[c][:50]
+        for term in terms:
+            f.write('@attribute ' + term + ' numeric\n')
+        f.write('@attribute CLASS {1,0}\n')
+        f.write('\n@data')
+
+        with open(c + '50.data') as csvf:
+            read = csv.reader(csvf)
+            for row in read:
+                f.write('\n')
+                tokens = row[0].split()
+                s = ''
+                for term in terms:
+                    if term in tokens:
+                        s += '1,'
+                    else:
+                        s += '0,'
+                s += row[1]
+                f.write(s)
+
+    file_name = 'binary_300' + c + '.arff'
+    with open(file_name, 'w') as f:
+        f.write('@relation binary\n\n')
+        terms = class_top300[c]
+        for term in terms:
+            f.write('@attribute ' + term + ' numeric\n')
+        f.write('@attribute CLASS {1,0}\n')
+        f.write('\n@data')
+
+        with open(c + '300.data') as csvf:
+            read = csv.reader(csvf)
+            for row in read:
+                f.write('\n')
+                tokens = row[0].split()
+                s = ''
+                for term in terms:
+                    if term in tokens:
+                        s += '1,'
+                    else:
+                        s += '0,'
+                s += row[1]
+                f.write(s)
+
 
 print(term_class_totals)
 process_data()
@@ -268,3 +289,14 @@ build_binary_datasets('O')
 create_arff_data_a('H')
 create_arff_data_a('N')
 create_arff_data_a('D')
+create_arff_data_a('I')
+create_arff_data_a('E')
+create_arff_data_a('R')
+create_arff_data_a('O')
+create_arff_data_b('H')
+create_arff_data_b('N')
+create_arff_data_b('D')
+create_arff_data_b('I')
+create_arff_data_b('E')
+create_arff_data_b('R')
+create_arff_data_b('O')
