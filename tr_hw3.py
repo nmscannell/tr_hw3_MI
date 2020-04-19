@@ -14,15 +14,6 @@ class_totals = {
     'D': 0,
     'O': 0
 }
-#class_docs = {
-#    'H': [],
-#    'N': [],
-#    'R': [],
-#    'E': [],
-#    'I': [],
-#    'D': [],
-#    'O': []
-#}
 class_top300 = {
     'H': [],
     'N': [],
@@ -200,11 +191,55 @@ def build_binary_datasets(c):
 
 
 def create_arff_data_a(c):
-    pass
+    file_name = 'multi_' + c + '.arff'
+    with open(file_name) as f:
+        f.write('@relation multiclass\n\n')
+        keys = [*term_class_totals].sort()
+        for term in keys:
+            f.write('@attribute ' + term + ' numeric\n')
+        if c == 'H' or c == 'N':
+            f.write('@attribute CLASS {H,N}\n')
+        else:
+            f.write('@attribute CLASS {D,E,I,O,R}\n')
+        f.write('\n@data\n')
+        for doc, tokens in docs:
+            s = ''
+            for term in keys:
+                if term in tokens:
+                    s += '1,'
+                else:
+                    s += '0,'
+            if c == 'H' or c == 'N':
+                s += doc_labels[doc][0]
+            else:
+                s += doc_labels[doc][1]
+            f.write(s + '\n')
 
 
 def create_arff_data_b(c):
-    pass
+    file_name = 'binary_' + c + '.arff'
+    with open(file_name) as f:
+        f.write('@relation multiclass\n\n')
+        keys = [*term_class_totals].sort()
+        for term in keys:
+            f.write('@attribute ' + term + ' numberic\n')
+        if c == 'H' or c == 'N':
+            f.write('@attribute CLASS {H,N}\n')
+        else:
+            f.write('@attribute CLASS {D,E,I,O,R}\n')
+        f.write('\n@data\n')
+        for doc, tokens in docs:
+            s = ''
+            for term in keys:
+                if term in tokens:
+                    s += '1,'
+                else:
+                    s += '0,'
+            if c == 'H' or c == 'N':
+                s += doc_labels[doc][0]
+            else:
+                s += doc_labels[doc][1]
+        pass
 
 print(term_class_totals)
 process_data()
