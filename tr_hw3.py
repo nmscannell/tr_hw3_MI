@@ -44,7 +44,7 @@ def parse_doc(doc):
     tokens = []
     for i in range(len(doc)):
         doc[i] = doc[i].strip().strip('\u201C').strip('\u201D').lower()
-        doc[i] = doc[i].strip('.!?,/\\*()-_&;~:[]{}')
+        doc[i] = doc[i].strip('.\"\'!?,/\\*()-_&;~:[]{}')
         if doc[i].count('/') > 0 and doc[i].count('.com') == 0:
             words = doc[i].split('/')
             for j in range(len(words)):
@@ -192,9 +192,10 @@ def build_binary_datasets(c):
 
 def create_arff_data_a(c):
     file_name = 'multi_' + c + '.arff'
-    with open(file_name) as f:
+    with open(file_name, 'w') as f:
         f.write('@relation multiclass\n\n')
-        keys = [*term_class_totals].sort()
+        keys = list(term_class_totals.keys())
+        keys.sort()
         for term in keys:
             f.write('@attribute ' + term + ' numeric\n')
         if c == 'H' or c == 'N':
@@ -202,7 +203,7 @@ def create_arff_data_a(c):
         else:
             f.write('@attribute CLASS {D,E,I,O,R}\n')
         f.write('\n@data\n')
-        for doc, tokens in docs:
+        for doc, tokens in docs.items():
             s = ''
             for term in keys:
                 if term in tokens:
@@ -218,9 +219,12 @@ def create_arff_data_a(c):
 
 def create_arff_data_b(c):
     file_name = 'binary_' + c + '.arff'
-    with open(file_name) as f:
-        f.write('@relation multiclass\n\n')
-        keys = [*term_class_totals].sort()
+    with open(file_name, 'w') as f:
+        f.write('@relation binary\n\n')
+        print(term_class_totals.keys())
+        print(list(term_class_totals.keys()))
+        keys = list(term_class_totals.keys()).sort()
+        print(keys)
         for term in keys:
             f.write('@attribute ' + term + ' numberic\n')
         if c == 'H' or c == 'N':
@@ -261,3 +265,6 @@ build_binary_datasets('I')
 build_binary_datasets('R')
 build_binary_datasets('E')
 build_binary_datasets('O')
+create_arff_data_a('H')
+create_arff_data_a('N')
+create_arff_data_a('D')
