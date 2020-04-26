@@ -1,7 +1,7 @@
 ,0
 ,0
-push eat eat,0
-maintain bulk go calories deficit fat adding calories maintain deficit fat,1
+push pull eat eat,0
+maintain bulk go calories deficit fat adding 400 calories maintain deficit fat,1
 ,0
 cut fat cut bulk,0
 press go question press,0
@@ -22,8 +22,8 @@ leg leg,0
 gaining daily gain,1
 ,0
 ,0
-nutrition from squat calories calories gaining fat cut reach protein,1
-,0
+nutrition from squat calories calories gaining fat cut protein,1
+pull pull pull pull,0
 ,0
 leg go cut leg leg exercises leg,0
 eat gain,0
@@ -44,9 +44,9 @@ calories from question calories calories per calories cutting,0
 calories calories question gain fat gain calories fat fat diet eating carbs gain gain fat carbs,1
 eating eat macros bench press,0
 ,0
-drinking typically protein go,1
+drinking protein go,1
 squat,0
-push push,0
+push pull pull push,0
 gaining gain from go gain protein,0
 diet carbs question eating eat foods foods fruit vegetables daily sugar from diet eating,1
 ,0
@@ -72,8 +72,8 @@ cutting,0
 exercises exercises,0
 from from,0
 bench,0
-bench bench diet food go,0
-fasting cut eating calories per cut bulk question cut from fat fasting fat cutting fat,1
+bench pull bench diet food go,0
+fasting cut eating 400 calories per cut bulk question cut from fat fasting fat cutting fat,1
 cut bulk protein calories from fat carbs cut bulk cut maintain fat protein calories deficit fat carbs question bulk phase carbs calories from fat carbs fat surplus from calories,1
 eating eat calories fat eating calories fat food eat,1
 eating macros from maintain go exercises diet,0
@@ -117,8 +117,8 @@ eating carbs carbs,0
 ,0
 ,0
 question from,0
-deficit level calories diet diet diet typically eating food per cut drinking,1
-surplus diet calories adding calories calories gain cutting adding bulk,1
+deficit level calories diet diet diet eating food per cut drinking,1
+surplus diet calories adding calories calories gain cutting 400 adding bulk,1
 question surplus,0
 ,0
 squat squat squat,0
@@ -147,13 +147,13 @@ go deadlift go question,0
 eating deficit eat calories level eating calories go calories go eat calorie meal eating deficit,1
 squat leg,0
 food meal meal calories fat protein per consuming meal aiming meal,1
-diet eat diet macros intermittent fasting eating meal diet foods cut eating calories eating protein per fat calories whey protein whey calories per protein fat,1
+diet eat diet macros intermittent fasting eating meal fat diet foods cut eating calories eating protein per fat calories whey protein whey calories per protein fat,1
 fat cut fat fat,0
 go,0
 squat squat squat,0
 go exercises exercises,0
 ,0
-go push go exercises,0
+go pull push go pull pull exercises,0
 gain protein cutting gaining daily protein gain deficit aiming consuming question protein,1
 diet consuming per eating nutrition,0
 leg leg,0
@@ -171,9 +171,9 @@ fat calories fat,0
 calories eat protein fat calorie,0
 question,0
 diet fat diet foods eat eat diet meal,1
-exercises from,0
+pull exercises pull from,0
 question,0
-fat eat meal push go,0
+fat eat meal push pull go,0
 cutting cutting cutting,0
 ,0
 fat fat leg,0
@@ -184,7 +184,7 @@ calories meal calories,0
 fat,0
 ,0
 deadlift,0
-from,0
+pull from pull,0
 go,0
 ,0
 deadlift,0
@@ -197,8 +197,8 @@ nutrition macros macros protein foods diet daily macros,1
 fat go cut bulk,0
 question question bench bench bench press bench from,0
 squat exercises,0
-press eating calories,0
-gain calorie gaining reach cut eat calories meat whey protein fruits,1
+press pull eating calories,0
+gain calorie gaining cut eat calories meat whey protein fruits,1
 cut deficit cutting phase aiming macros meal question daily maintain cut,1
 deficit fat bench squat deadlift bench bench diet bench diet bench deadlift calories calories,0
 exercises per bench press bench press,0
@@ -206,13 +206,13 @@ exercises per bench press bench press,0
 go exercises go go exercises go gaining,0
 go,0
 go fat nutrition,0
-nutrition from food nutrition foods daily calorie calorie,1
+nutrition from nutrition food nutrition foods daily calorie calorie,1
 nutrition protein from phase meat diet protein per protein protein eat bulk protein from meal,1
 calories gain cutting,0
 go,0
 question,0
 go cut from,0
-fat fat,0
+fat fat pull,0
 protein diet diet,0
 ,0
 ,0
@@ -220,29 +220,29 @@ protein diet diet,0
 exercises,0
 nutrition question gaining eat nutrition sugar fruit whey protein eating,1
 from,0
-push leg question gain,0
+push pull leg question gain,0
 ,0
 fat fat,0
 ,0
 squat per from squat from,0
 squat squat,0
-from push bench press go,0
+from push bench press pull go,0
 exercises leg from press level push,0
 from,0
 question go bench,0
-question fasting intermittent fasting typically question eating fasting,1
+question fasting intermittent fasting question eating fasting,1
 question nutrition diet nutrition cut calories eat macros cut eating calories per protein fat cut eat calories calories,1
 question exercises go go bench,0
 question go,0
 question macros protein eat carbs foods protein protein,1
 question calories question question cutting calories cut calories calorie deficit surplus fat consume,1
-question go,0
+question pull go,0
 from exercises,0
 from go,0
 from go,0
-deadlift deadlift squat go push,0
-deadlift deadlift squat go push,0
-leg leg leg leg press go leg press leg press push from go,0
+deadlift deadlift squat go push deadlift,0
+deadlift deadlift squat go push deadlift,0
+leg leg leg leg leg press go leg press leg press push from go,0
 bench press bench,0
 go go,0
 ,0
@@ -251,9 +251,9 @@ press bench bench press,0
 deadlift go,0
 protein fat gain per level,1
 bench press go bench press bench,0
-adding calorie exercises calories calories reach calorie deficit calories calorie reach calories deficit,1
-press press leg,0
-fat,0
+adding calorie exercises calories calories calorie deficit calories calorie calories deficit,1
+press press leg pull,0
+pull fat,0
 exercises,0
 question from foods question question,0
 ,0
@@ -286,7 +286,7 @@ from exercises gain exercises go go,0
 question question question,0
 cutting,0
 squat,0
-squat squat push leg,0
+squat squat push pull leg,0
 ,0
 protein whey,1
 fasting cutting fasting drinking cutting bulk fasting cutting bulk gain,1
@@ -302,7 +302,7 @@ exercises,0
 go gain push,0
 eat consuming from fruits,1
 daily fruits vegetables vegetables,1
-bench from bench bench press cut press leg,0
+bench from bench bench press cut press leg pull,0
 eat protein consume protein gain,1
 eat protein consume protein gain,1
 eat protein cut calories protein fat level fat maintain eating gaining fat,1
@@ -336,7 +336,7 @@ bench squat deadlift bench,0
 leg go leg,0
 ,0
 ,0
-push bench squat deadlift,0
+push pull bench squat deadlift pull pull,0
 eat bulk eat bulk gain fat gain from gain eat protein carbs surplus gain fat fat,1
 bench bench bench exercises from,0
 squat squat,0
@@ -344,14 +344,14 @@ squat squat,0
 diet per,0
 eating from eating eating diet from,0
 bench press bench bench bench bench,0
-,0
+pull,0
 carbs from protein carbs carbs eat meal carbs,1
 deadlift exercises deadlift squat deadlift,0
 level calories calories,1
 squat,0
-go,0
+pull go,0
 intermittent fasting intermittent fasting eating from fasting question gain eating protein,1
-bench press press,0
+pull bench press press pull pull,0
 ,0
 squat go,0
 ,0

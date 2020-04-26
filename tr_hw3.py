@@ -1,6 +1,7 @@
 import pandas as pd
 import math
 import csv
+import nltk
 
 # a dictionary that stores the total number of documents for each class as a list for each term
 # for example term_class_totals['weight'] = [total # docs in H containing 'weight', total in N containing 'weight', etc]
@@ -58,13 +59,31 @@ def parse_doc(doc):
     tokens = []
     for i in range(len(doc)):
         doc[i] = doc[i].strip().strip('\u201C').strip('\u201D').lower()
-        doc[i] = doc[i].strip('.\"\'!?,/\\*()-_&;~:[]{}').strip().replace(',', '.')
-        if len(doc[i]) == 0 or doc[i] == '#' or doc[i] == '+' or doc[i] == '++' or doc[i] == '%':
+        doc[i] = doc[i].strip('.\"\'!?,/\\*()-_&;~:[]{}').replace('"',"'").replace(',', '.')
+        if len(doc[i]) == 0 or doc[i] == '#' or doc[i] == '+' or doc[i] == '++' or doc[i] == '%' or doc[i] == '@':
             continue
         if doc[i].count('/') > 0 and doc[i].count('.com') == 0:
             words = doc[i].split('/')
             for j in range(len(words)):
-                tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}').strip().replace(',', '.'))
+                tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}'))
+        elif doc[i].count('-') > 0 and doc[i].count('.com') == 0:
+            words = doc[i].split('-')
+            for j in range(len(words)):
+                tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}'))
+        elif doc[i].count('...') > 0:
+            words = doc[i].split('...')
+            for j in range(len(words)):
+                tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}'))
+        elif doc[i].count(']') > 0:
+            words = doc[i].split(']')
+            for j in range(len(words)):
+                tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}'))
+        elif doc[i].count('[') > 0:
+            words = doc[i].split('[')
+            for j in range(len(words)):
+                if words[j] == '#':
+                    continue
+                tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}'))
         else:
             tokens.append(doc[i])
     return tokens
@@ -106,10 +125,10 @@ def process_data():
                 totals[class_map[c2]] = 1
                 term_class_totals[term] = totals
 
-        # store the full tokens in a dictionary with its doc id
+        # store the full tokens in a dict with its doc id
         docs[d] = tokens
 
-        # store the two labels for each doc (first index: by health; second: by topic)
+        # store labels for each doc (first index: by health; second: by topic)
         doc_labels[d] = (c1, c2)
 
 
@@ -253,14 +272,8 @@ def create_arff_data_a(c):
         keys = list(term_class_totals.keys())
         keys.sort()
         for term in keys:
-            s = '@attribute '
-            if term.count("'") > 0 or term.count('-') > 0:
-                # If the term contains certain characters, the term must be made into a string. Otherwise Weka can't read it.
-                s += '"' + term.strip() + '"'
-            else:
-                s += term.strip()
-            s += ' numeric\n'
-            f.write(s)
+            # weka was having trouble reading files without quotes for some of the words--not consistent
+            f.write('@attribute "' + term + '" numeric\n')
         if c == 'H' or c == 'N':
             f.write('@attribute CLASS {H,N}\n')
         else:
@@ -295,14 +308,8 @@ def create_arff_data_b(c):
         terms = class_top300[c][:50]
         terms.sort()
         for term in terms:
-            s = '@attribute '
-            if term.count("'") > 0 or term.count('-') > 0:
-                # If the term contains certain characters, the term must be made into a string. Otherwise Weka can't read it.
-                s += '"' + term.strip() + '"'
-            else:
-                s += term.strip()
-            s += ' numeric\n'
-            f.write(s)
+            # weka was having trouble reading files without quotes for some of the words--not consistent
+            f.write('@attribute "' + term + '" numeric\n')
         f.write('@attribute CLASS {1,0}\n')
         f.write('\n@data')
 
@@ -327,14 +334,8 @@ def create_arff_data_b(c):
         terms = class_top300[c]
         terms.sort()
         for term in terms:
-            s = '@attribute '
-            if term.count("'") > 0 or term.count('-') > 0:
-                # If the term contains certain characters, the term must be made into a string. Otherwise Weka can't read it.
-                s += '"' + term.strip() + '"'
-            else:
-                s += term.strip()
-            s += ' numeric\n'
-            f.write(s)
+            # weka was having trouble reading files without quotes for some of the words--not consistent
+            f.write('@attribute "' + term + '" numeric\n')
         f.write('@attribute CLASS {1,0}\n')
         f.write('\n@data')
 
@@ -355,7 +356,6 @@ def create_arff_data_b(c):
 
 
 process_data()
-'''
 mi_features('H')
 mi_features('N')
 mi_features('D')
@@ -363,7 +363,6 @@ mi_features('I')
 mi_features('R')
 mi_features('E')
 mi_features('O')
-
 build_binary_datasets('H')
 build_binary_datasets('N')
 build_binary_datasets('D')
@@ -371,7 +370,6 @@ build_binary_datasets('I')
 build_binary_datasets('R')
 build_binary_datasets('E')
 build_binary_datasets('O')
-'''
 create_arff_data_a('H')
 create_arff_data_a('N')
 create_arff_data_a('D')
@@ -379,8 +377,6 @@ create_arff_data_a('I')
 create_arff_data_a('E')
 create_arff_data_a('R')
 create_arff_data_a('O')
-
-'''
 create_arff_data_b('H')
 create_arff_data_b('N')
 create_arff_data_b('D')
@@ -388,4 +384,3 @@ create_arff_data_b('I')
 create_arff_data_b('E')
 create_arff_data_b('R')
 create_arff_data_b('O')
-'''
