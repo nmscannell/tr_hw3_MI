@@ -1,6 +1,5 @@
 import tr_hw3
 import unittest
-import logging as log
 import sys
 import glob
 import os
@@ -9,7 +8,7 @@ import os
 class TestHW3(unittest.TestCase):
 
     def tearDown(self):
-        print('Tear Down: removing any created files')
+        print('Tear Down: removing any created files\n')
         for f in glob.glob('arff/*'):
             os.remove(f)
         for f in glob.glob('scores/*'):
@@ -26,7 +25,7 @@ class TestHW3(unittest.TestCase):
         print('result: ', end='')
         print(result)
         self.assertEqual(tok, result)
-        print('Finished test_parse_simple_sentence')
+        print('Finished test_parse_simple_sentence\n')
 
     def test_parse_med_sentence(self):
         s = "This, is a, med/intermediate 'level-difficulty' sentence."
@@ -37,7 +36,7 @@ class TestHW3(unittest.TestCase):
         print('result: ', end='')
         print(result)
         self.assertEqual(tok, result)
-        print('Finished test_parse_med_sentence')
+        print('Finished test_parse_med_sentence\n')
 
     def test_parse_complex_sentence(self):
         s = "This, is a, far](more 'difficult' doc. # it contains% odd google.com term& can't"
@@ -48,10 +47,12 @@ class TestHW3(unittest.TestCase):
         print('result: ', end='')
         print(result)
         self.assertEqual(tok, result)
-        print('Finished test_parse_complex_sentence')
+        print('Finished test_parse_complex_sentence\n')
 
     def test_process_data(self):
-        pass
+        print('Running test_process_data')
+        tr_hw3.process_data(True)
+        print('Finished test_process_data\n')
 '''
     def test_calc_mi(self):
         pass

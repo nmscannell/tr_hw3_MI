@@ -102,6 +102,15 @@ def process_data(test=False):
     """
     if test:
         print('in process_data')
+        print('class_totals: ', end='')
+        print(class_totals)
+        print('length of term_class_totals: ', end='')
+        print(len(term_class_totals))
+        print('length of docs: ', end='')
+        print(len(docs))
+        print('length of doc_labels: ', end='')
+        print(len(doc_labels))
+
     # open the excel files as pandas data frames for easy parsing
     sheet1 = pd.ExcelFile('data/Annotated_for_health.xlsx').parse(0).values
     sheet2 = pd.ExcelFile('data/Annotated_for_topic.xlsx').parse(0).values
@@ -144,15 +153,20 @@ def process_data(test=False):
         doc_labels[d] = (c1, c2)
 
         if test:
-            print('doc ID: ' + str(d))
-            print('first class: ' + c1)
-            print('second class: ' + c2)
-            print('first doc: ', end='')
-            print(sheet1[d][0])
-            print('should match second: ', end='')
-            print(sheet2[d][0])
+            try:
+                assert sheet1[d][0] == sheet2[d][0]
+            except AssertionError:
+                print('First and second docs not equal!')
     if test:
         print('finished process_data')
+        print('class_totals: ', end='')
+        print(class_totals)
+        print('length of term_class_totals: ', end='')
+        print(len(term_class_totals))
+        print('length of docs: ', end='')
+        print(len(docs))
+        print('length of doc_labels: ', end='')
+        print(len(doc_labels))
 
 
 def mi_features(c, test=False):
