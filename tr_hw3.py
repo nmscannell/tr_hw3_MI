@@ -1,7 +1,7 @@
 import pandas as pd
 import math
 import csv
-import nltk
+import os
 
 # a dictionary that stores the total number of documents for each class as a list for each term
 # for example term_class_totals['weight'] = [total # docs in H containing 'weight', total in N containing 'weight', etc]
@@ -41,20 +41,19 @@ docs = {}
 # dictionary to store labels for each document by doc ID as tuples (health, topic)
 doc_labels = {}
 
-# open the excel files as pandas data frames for easy parsing
-sheet1 = pd.ExcelFile('data/Annotated_for_health.xlsx').parse(0).values
-sheet2 = pd.ExcelFile('data/Annotated_for_topic.xlsx').parse(0).values
 
-
-def parse_doc(doc):
+def parse_doc(doc, test=False):
     """ A helper function to parse and tokenize a document. All white space is removed.
     All punctuation at the end of terms are removed and all words are lowercased. If a token
     is a conjunction of terms separated by / and is not a website, the token is split up into
     its individual terms (per suggestion from Dr McRoy via email).
 
     :param doc: the document to parse
+    :param test: True if testing--used for logging
     :return: a list containing the tokenized document
     """
+    if test:
+        print('in parse_doc')
     doc = doc.split()
     tokens = []
     for i in range(len(doc)):
@@ -86,17 +85,30 @@ def parse_doc(doc):
                 tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}'))
         else:
             tokens.append(doc[i])
+    if test:
+        print('Finished parsing')
     return tokens
 
 
-def process_data():
+def process_data(test=False):
     """ A function to parse the two xlsx files and store information for later use.
     The total number of documents are stored for each class in class_totals. The tokenized
     documents are stored in the docs dictionary by doc ID. The labels for each doc are stored
     in tuples (first index for health annotation, second index for topic annotation) in the
     doc_labels dictionary by doc ID. Term_class_totals stores the number of documents in each
     class that each term appears in (document frequency, not term frequency, for MI scores).
+
+    :param test: True if testing--used for logging
     """
+    if test:
+        print('in process_data')
+    # open the excel files as pandas data frames for easy parsing
+    sheet1 = pd.ExcelFile('data/Annotated_for_health.xlsx').parse(0).values
+    sheet2 = pd.ExcelFile('data/Annotated_for_topic.xlsx').parse(0).values
+
+    if test:
+        print('opened xlsx files')
+
     for d in range(359):
         # update the total num docs for each class
         c1 = sheet1[d][1]
@@ -131,8 +143,19 @@ def process_data():
         # store labels for each doc (first index: by health; second: by topic)
         doc_labels[d] = (c1, c2)
 
+        if test:
+            print('doc ID: ' + str(d))
+            print('first class: ' + c1)
+            print('second class: ' + c2)
+            print('first doc: ', end='')
+            print(sheet1[d][0])
+            print('should match second: ', end='')
+            print(sheet2[d][0])
+    if test:
+        print('finished process_data')
 
-def mi_features(c):
+
+def mi_features(c, test=False):
     """ Given a class, c, calculate the mutual information scores for all
     terms in the training set for that class. After the scores are calculated,
     the top 300 terms are stored in descending order for build_binary_datasets.
@@ -141,7 +164,10 @@ def mi_features(c):
     calc_mi.
 
     :param c: a class/topic
+    :param test: True if testing--used for logging
     """
+    if len(docs) == 0:
+        process_data()
     mi_scores = []
 
     # for each term, calc mi score
@@ -163,7 +189,7 @@ def mi_features(c):
             f.write(s)
 
 
-def calc_mi(c, totals):
+def calc_mi(c, totals, test=False):
     """ A helper function to calculate the mutual information score for a term for
     a given class. It finds the values of N11, N10, N01, and N00, then uses the
     equation from the textbook to calculate MI.
@@ -172,6 +198,7 @@ def calc_mi(c, totals):
     :param totals: a list containing the total number of documents for each class
     that the term is in; for example, totals[0] contains the number of documents in
     class H that the term is in
+    :param test: True if testing--used for logging
     :return: the calculated MI score for the term in the class
     """
     # n11: number of docs with the term in the class
@@ -218,14 +245,17 @@ def calc_mi(c, totals):
     return result
 
 
-def build_binary_datasets(c):
+def build_binary_datasets(c, test=False):
     """ Given a topic, c, create two binary datasets, C50.data and C300.data.
     Each dataset contains the documents in the training set, reduced to only
     contain the top 50 or top 300 features of the given class. Documents are
     labeled 1, if they are in the given class, or 0 otherwise.
 
     :param c: a topic/class
+    :param test: True if testing--used for logging
     """
+    if len(class_top300[c]) == 0:
+        mi_features(c)
     file1 = 'data/' + c + '50.data'
     file2 = 'data/' + c + '300.data'
     words1 = class_top300[c][:50]
@@ -259,13 +289,16 @@ def build_binary_datasets(c):
                 writer2.writerow([s2] + [label])
 
 
-def create_arff_data_a(c):
+def create_arff_data_a(c, test=False):
     """ Given a topic, c, create an arff file, multi_C.arff, using all of the
     features of the training set. Documents are labeled by their class.
     These are usable by Weka tools.
 
     :param c: a class/topic
+    :param test: True if testing--used for logging
     """
+    if len(docs) == 0:
+        process_data()
     file_name = 'arff/multi_' + c + '.arff'
     with open(file_name, 'w') as f:
         f.write('@relation multiclass\n\n')
@@ -294,14 +327,17 @@ def create_arff_data_a(c):
             f.write(s)
 
 
-def create_arff_data_b(c):
+def create_arff_data_b(c, test=False):
     """" Given a topic, c, create two arff files. The first, binary_C50.arff, uses
     the top 50 features of the class in the dataset. The second, binary_C300.arff,
     uses the top 300 features of the class. The labels are 1, if the document is
     in the class, or 0 otherwise. These are usable by Weka tools.
 
     :param c: a class/topic
+    :param test: True if testing--used for logging
     """
+    if not os.path.isfile('data/'+c+'50.data'):
+        build_binary_datasets(c)
     file_name = 'arff/binary_' + c + '50.arff'
     with open(file_name, 'w') as f:
         f.write('@relation binary\n\n')
@@ -354,8 +390,9 @@ def create_arff_data_b(c):
                 s += row[1]
                 f.write(s)
 
-
+'''
 process_data()
+
 mi_features('H')
 mi_features('N')
 mi_features('D')
@@ -363,6 +400,7 @@ mi_features('I')
 mi_features('R')
 mi_features('E')
 mi_features('O')
+
 build_binary_datasets('H')
 build_binary_datasets('N')
 build_binary_datasets('D')
@@ -370,6 +408,7 @@ build_binary_datasets('I')
 build_binary_datasets('R')
 build_binary_datasets('E')
 build_binary_datasets('O')
+
 create_arff_data_a('H')
 create_arff_data_a('N')
 create_arff_data_a('D')
@@ -377,6 +416,7 @@ create_arff_data_a('I')
 create_arff_data_a('E')
 create_arff_data_a('R')
 create_arff_data_a('O')
+
 create_arff_data_b('H')
 create_arff_data_b('N')
 create_arff_data_b('D')
@@ -384,3 +424,4 @@ create_arff_data_b('I')
 create_arff_data_b('E')
 create_arff_data_b('R')
 create_arff_data_b('O')
+'''
