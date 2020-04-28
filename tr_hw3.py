@@ -52,8 +52,7 @@ def parse_doc(doc, test=False):
     :param test: True if testing--used for logging
     :return: a list containing the tokenized document
     """
-    if test:
-        print('in parse_doc')
+    if test: print('in parse_doc for: ' + doc)
     doc = doc.split()
     tokens = []
     for i in range(len(doc)):
@@ -85,8 +84,7 @@ def parse_doc(doc, test=False):
                 tokens.append(words[j].strip('\u201C').strip('\u201D').strip('.\"\'!?,/\\*()-_&;~:[]{}'))
         else:
             tokens.append(doc[i])
-    if test:
-        print('Finished parsing')
+    if test: print('Finished parsing')
     return tokens
 
 
@@ -115,10 +113,21 @@ def process_data(test=False):
     sheet1 = pd.ExcelFile('data/Annotated_for_health.xlsx').parse(0).values
     sheet2 = pd.ExcelFile('data/Annotated_for_topic.xlsx').parse(0).values
 
-    if test:
-        print('opened xlsx files')
+    # they are already sorted by the sentences, but if a new, unsorted, copy is used to
+    # test my code, they will need to be sorted by column 0 by uncommenting the below lines.
+    # sheet1[sheet1[:, 0].argsort()]
+    # sheet2[sheet2[:, 0].argsort()]
+
+    if test: print('opened xlsx files')
 
     for d in range(359):
+        if test:
+            try:
+                assert sheet1[d][0] == sheet2[d][0]
+            except AssertionError:
+                print('First and second docs not equal!')
+                return
+
         # update the total num docs for each class
         c1 = sheet1[d][1]
         n = class_totals[c1]
@@ -152,11 +161,6 @@ def process_data(test=False):
         # store labels for each doc (first index: by health; second: by topic)
         doc_labels[d] = (c1, c2)
 
-        if test:
-            try:
-                assert sheet1[d][0] == sheet2[d][0]
-            except AssertionError:
-                print('First and second docs not equal!')
     if test:
         print('finished process_data')
         print('class_totals: ', end='')
@@ -180,8 +184,9 @@ def mi_features(c, test=False):
     :param c: a class/topic
     :param test: True if testing--used for logging
     """
-    if len(docs) == 0:
-        process_data()
+    if test: print('in mi_features for ' + c)
+
+    if len(docs) == 0: process_data()
     mi_scores = []
 
     # for each term, calc mi score
@@ -191,9 +196,16 @@ def mi_features(c, test=False):
     # sort the scores in descending order
     mi_scores.sort(reverse=True, key=lambda e: e[1])
 
+    if test:
+        print('scored and sorted all terms; length mi_scores: ', end='')
+        print(len(mi_scores))
+        print('saving top 300 terms for ' + c)
+
     # save the top 300 terms for the class for build_binary_datasets
     for i in range(300):
         class_top300[c].append(mi_scores[i][0])
+
+    if test: print('creating scores/' + c + '.scores')
 
     # create a doc with each term and its mi score
     filename = 'scores/' + c + '.scores'
@@ -201,6 +213,8 @@ def mi_features(c, test=False):
         for i in range(len(mi_scores)):
             s = str(mi_scores[i][0]) + "  " + "{:.5f}".format(mi_scores[i][1]) + '\n'
             f.write(s)
+
+    if test: print('finished mi_features')
 
 
 def calc_mi(c, totals, test=False):
@@ -215,6 +229,8 @@ def calc_mi(c, totals, test=False):
     :param test: True if testing--used for logging
     :return: the calculated MI score for the term in the class
     """
+    if test: print('calculating score')
+
     # n11: number of docs with the term in the class
     n11 = totals[class_map[c]]
 
@@ -245,17 +261,19 @@ def calc_mi(c, totals, test=False):
     n00 -= n10
 
     n = n11 + n10 + n01 + n00
-
+    if test:
+        print('n11: ' + str(n11))
+        print('n10: ' + str(n10))
+        print('n01: ' + str(n01))
+        print('n00: ' + str(n00))
+        print('n: ' + str(n))
     # calculate the MI score based on the equation in the textbook
     result = 0
-    if n11 != 0:
-        result += (n11/n)*math.log2((n*n11)/((n11+n10)*(n11+n01)))
-    if n01 != 0:
-        result += (n01/n)*math.log2((n*n01)/((n00+n01)*(n11+n01)))
-    if n10 != 0:
-        result += (n10/n)*math.log2((n*n10)/((n11+n10)*(n00+n10)))
-    if n00 != 0:
-        result += (n00/n)*math.log2((n*n00)/((n00+n01)*(n10+n00)))
+    if n11 != 0: result += (n11/n)*math.log2((n*n11)/((n11+n10)*(n11+n01)))
+    if n01 != 0: result += (n01/n)*math.log2((n*n01)/((n00+n01)*(n11+n01)))
+    if n10 != 0: result += (n10/n)*math.log2((n*n10)/((n11+n10)*(n00+n10)))
+    if n00 != 0: result += (n00/n)*math.log2((n*n00)/((n00+n01)*(n10+n00)))
+    if test: print('mi score: ' + result)
     return result
 
 
@@ -268,8 +286,9 @@ def build_binary_datasets(c, test=False):
     :param c: a topic/class
     :param test: True if testing--used for logging
     """
-    if len(class_top300[c]) == 0:
-        mi_features(c)
+    if test: print('in build_binary_datasets for ' + c)
+    if len(class_top300[c]) == 0: mi_features(c)
+
     file1 = 'data/' + c + '50.data'
     file2 = 'data/' + c + '300.data'
     words1 = class_top300[c][:50]
@@ -279,6 +298,7 @@ def build_binary_datasets(c, test=False):
         writer = csv.writer(csvf)
         with open(file2, 'w') as csvf2:
             writer2 = csv.writer(csvf2)
+            if test: print('Files are open and being written')
             for i in range(len(docs)):
                 classes = doc_labels[i]
                 tokens = docs[i]
@@ -301,6 +321,7 @@ def build_binary_datasets(c, test=False):
                     label = 0
                 writer.writerow([s] + [label])
                 writer2.writerow([s2] + [label])
+    if test: print('finished in build_binary_datasets')
 
 
 def create_arff_data_a(c, test=False):
@@ -311,10 +332,12 @@ def create_arff_data_a(c, test=False):
     :param c: a class/topic
     :param test: True if testing--used for logging
     """
-    if len(docs) == 0:
-        process_data()
+    if test: print('in create_arff_data_a for ' + c)
+    if len(docs) == 0: process_data()
+
     file_name = 'arff/multi_' + c + '.arff'
     with open(file_name, 'w') as f:
+        if test: print('file is open and being written')
         f.write('@relation multiclass\n\n')
         keys = list(term_class_totals.keys())
         keys.sort()
@@ -339,6 +362,7 @@ def create_arff_data_a(c, test=False):
             else:
                 s += doc_labels[doc][1]
             f.write(s)
+    if test: print('finished creating arff file')
 
 
 def create_arff_data_b(c, test=False):
@@ -350,10 +374,12 @@ def create_arff_data_b(c, test=False):
     :param c: a class/topic
     :param test: True if testing--used for logging
     """
-    if not os.path.isfile('data/'+c+'50.data'):
-        build_binary_datasets(c)
+    if test: print('in create_arff_data_b for ' + c)
+    if not os.path.isfile('data/'+c+'50.data'): build_binary_datasets(c)
+
     file_name = 'arff/binary_' + c + '50.arff'
     with open(file_name, 'w') as f:
+        if test: print('binary 50 arff file being written')
         f.write('@relation binary\n\n')
         terms = class_top300[c][:50]
         terms.sort()
@@ -380,6 +406,7 @@ def create_arff_data_b(c, test=False):
 
     file_name = 'arff/binary_' + c + '300.arff'
     with open(file_name, 'w') as f:
+        if test: print('binary 300 arff file being written')
         f.write('@relation binary\n\n')
         terms = class_top300[c]
         terms.sort()
@@ -403,6 +430,7 @@ def create_arff_data_b(c, test=False):
                         s += '0,'
                 s += row[1]
                 f.write(s)
+    if test: print('finished creating binary arff files')
 
 '''
 process_data()
